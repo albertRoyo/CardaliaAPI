@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/albertRoyo/Cardalia.com/models"
+	"github.com/albertRoyo/CardaliaAPI/models"
 )
 
 /*

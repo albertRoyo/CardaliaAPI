@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/albertRoyo/Cardalia.com/utils/token"
+	"github.com/albertRoyo/CardaliaAPI/utils/token"
 	"github.com/gin-gonic/gin"
 )
 
