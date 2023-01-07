@@ -1,1 +1,1 @@
-web: bin/CardaliaAPI
+api: bin/CardaliaAPI
