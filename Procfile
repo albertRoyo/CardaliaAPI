@@ -1,1 +1,1 @@
-api: bin/CardaliaAPI
+worker: bin/CardaliaAPI
