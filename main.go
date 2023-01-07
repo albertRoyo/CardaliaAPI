@@ -56,7 +56,6 @@ func main() {
 	router.GET("/users/:card_id", routes.GetAllUserCollectionsByCardId)
 
 	//protected := router.Group("/admin")
-
 	//protected.Use(cors.Default())
 	//protected.Use(middlewares.JwtAuthMiddleware())
 	router.POST("/cards", routes.SaveCollection)
