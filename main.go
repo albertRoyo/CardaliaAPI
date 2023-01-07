@@ -77,6 +77,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-	router.Run(os.Getenv("PORT"))
+	router.Run(":" + os.Getenv("PORT"))
 
 }
