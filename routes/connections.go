@@ -3,8 +3,9 @@ package routes
 import (
 	"errors"
 
-	"github.com/albertRoyo/CardaliaAPI/models"
-	"github.com/albertRoyo/CardaliaAPI/utils/token"
+	"CardaliaAPI/models"
+	"CardaliaAPI/utils/token"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

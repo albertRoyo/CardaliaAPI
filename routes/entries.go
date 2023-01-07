@@ -3,7 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/albertRoyo/CardaliaAPI/models"
+	"CardaliaAPI/models"
+
 	"github.com/gin-gonic/gin"
 )
 

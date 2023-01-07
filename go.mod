@@ -1,4 +1,4 @@
-module github.com/albertRoyo/CardaliaAPI
+module CardaliaAPI
 
 go 1.19
 

@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/albertRoyo/CardaliaAPI/models"
-	"github.com/albertRoyo/CardaliaAPI/routes"
+	"CardaliaAPI/models"
+
+	"CardaliaAPI/routes"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
