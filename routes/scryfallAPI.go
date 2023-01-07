@@ -27,7 +27,6 @@ func getCardByName(cardName string) (models.Card, error) {
 	// Convert response body to Card struct
 	json.Unmarshal(bodyBytes, &newCard)
 	return newCard, nil
-
 }
 
 func getCardByID(ID string) (models.Card, error) {
