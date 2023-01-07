@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"net/http"
-
 	"CardaliaAPI/models"
-
 	"CardaliaAPI/utils/token"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
