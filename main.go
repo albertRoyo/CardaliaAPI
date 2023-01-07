@@ -3,7 +3,6 @@ package main
 import (
 	"CardaliaAPI/models"
 	"log"
-	"os"
 
 	"CardaliaAPI/routes"
 
@@ -31,8 +30,8 @@ func CORSMiddleware() gin.HandlerFunc {
 func main() {
 
 	models.ConnectDataBase()
-
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
 	//public := router.Group("/")
 
@@ -77,6 +76,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
-	router.Run(":" + os.Getenv("PORT"))
+	router.Run("localhost:9090")
 
 }
