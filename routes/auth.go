@@ -10,7 +10,6 @@ import (
 
 func SaveCollection(c *gin.Context) {
 	user_id, err := token.ExtractTokenID(c)
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
