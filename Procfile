@@ -1,1 +1,1 @@
-web: go run main.go
+api: go run main.go
