@@ -1,1 +1,1 @@
-api: go run main.go
+api: bin/CardaliaAPI
