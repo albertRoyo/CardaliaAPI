@@ -2,11 +2,14 @@ package main
 
 import (
 	"CardaliaAPI/models"
+	"log"
+	"os"
 
 	"CardaliaAPI/routes"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -69,6 +72,11 @@ func main() {
 
 	router.GET("/trades", routes.GetTrades)
 
-	router.Run("localhost:9090")
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	router.Run(os.Getenv("PORT"))
 
 }
