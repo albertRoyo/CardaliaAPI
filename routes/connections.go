@@ -9,7 +9,6 @@ import (
 )
 
 func LoginCheck(Username string, password string) (string, error) {
-
 	var err error
 	u := models.User{}
 	err = models.DB.Model(models.User{}).Where("Username = ?", Username).Take(&u).Error
