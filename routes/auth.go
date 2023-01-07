@@ -10,7 +10,6 @@ import (
 )
 
 func SaveCollection(c *gin.Context) {
-
 	user_id, err := token.ExtractTokenID(c)
 
 	if err != nil {
