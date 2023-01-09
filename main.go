@@ -75,6 +75,6 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-	router.Run("localhost:" + port)
+	router.Run(":" + port)
 
 }
