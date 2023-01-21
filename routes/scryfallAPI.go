@@ -1,3 +1,8 @@
+/*
+File		: scryfallAPI.go
+Description	: File that deals with all the comunication with the Scryfall API.
+*/
+
 package routes
 
 import (
@@ -10,12 +15,14 @@ import (
 )
 
 /*
-Given a card name with no spaces and commas, the function uses the ScryFall api to
-create a new struct of the card.
--IMPUT: 	The exact cardname string
--RETURN:	Card(struct) |&&| True if the card was found, false otherwise
+Function	: Get card by name Scryfall
+Description	: Given a card name with no spaces and commas, the function uses the ScryFall api to return a
+card with all its information.
+
+Parameters 	: cardName
+Return     	: Card, error
 */
-func getCardByName(cardName string) (models.Card, error) {
+func GetCardByNameScryfall(cardName string) (models.Card, error) {
 	resp, err := http.Get("https://api.scryfall.com/cards/named?exact=" + models.CleanCardName(cardName))
 	var newCard models.Card
 	if err != nil {
@@ -29,7 +36,13 @@ func getCardByName(cardName string) (models.Card, error) {
 	return newCard, nil
 }
 
-func getCardByID(ID string) (models.Card, error) {
+/*
+Function	: Get card by ID Scryfall
+Description	: Given a cardID, the function uses the ScryFall api to return a card with all its information.
+Parameters 	: cardID
+Return     	: Card, error
+*/
+func GetCardByIDScryfall(ID string) (models.Card, error) {
 	resp, err := http.Get("https://api.scryfall.com/cards/" + ID)
 	var newCard models.Card
 	if err != nil {
@@ -44,11 +57,14 @@ func getCardByID(ID string) (models.Card, error) {
 }
 
 /*
-Given a partial card name, the function uses the ScryFall api to search for the first 20 cards matches.
--IMPUT: 	Partial card name string
--RETURN:	String card list
+Function	: Get card by Uncompleted Scryfall
+Description	: Given a partial card name, the function uses the ScryFall api to return a card with all its information.
+This API consult can't generate error, only empty lists.
+
+Parameters 	: uncompleted cardName
+Return     	: cardName list
 */
-func getCardUncompleted(un_cardname string) []string {
+func GetCardUncompletedScryfall(un_cardname string) []string {
 	resp, err := http.Get("https://api.scryfall.com/cards/autocomplete?q=" + un_cardname)
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -64,14 +80,16 @@ func getCardUncompleted(un_cardname string) []string {
 }
 
 /*
-Get all the paper versions of a card.
--IMPUT: 	gin context GET /cards/versions/:cardname
--RETURN:	All the paper versions of a card
+Function	: Get card version Scryfall
+Description	: Given a cardName, the function uses the ScryFall api to return all the paper versions of a card.
+Parameters 	: cardName
+Return     	: CardVersion list, error
 */
-func getCardVersions(cardname string) []models.CardVersion {
+func GetCardVersionsScryfall(cardname string) ([]models.CardVersion, error) {
+	var cardVersionsList []models.CardVersion
 	resp, err := http.Get("https://api.scryfall.com/cards/search?order=released&q=%21%22" + cardname + "%22+include%3Aextras&unique=prints")
 	if err != nil {
-		fmt.Println("Error: ", err)
+		return cardVersionsList, err
 	}
 	defer resp.Body.Close()
 
@@ -80,27 +98,6 @@ func getCardVersions(cardname string) []models.CardVersion {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		json.Unmarshal(bodyBytes, &cardVersionsListRESP)
 	}
-	cardVersionsList := models.RemoveDigitalVersions(cardVersionsListRESP.Cards)
-	return cardVersionsList
-}
-
-/*
-Get a version of a card.
--IMPUT: 	gin context GET /card/:set/:number
--RETURN:	A version of a card
-*/
-func getCardVersion(set string, number string) models.Card {
-	resp, err := http.Get("https://api.scryfall.com/cards/" + set + "/" + number)
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
-	defer resp.Body.Close()
-
-	var newCard models.Card
-
-	bodyBytes, _ := io.ReadAll(resp.Body)
-
-	// Convert response body to Card struct
-	json.Unmarshal(bodyBytes, &newCard)
-	return newCard
+	cardVersionsList = models.RemoveDigitalVersions(cardVersionsListRESP.Cards)
+	return cardVersionsList, nil
 }

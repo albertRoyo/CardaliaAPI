@@ -1,24 +1,39 @@
+/*
+File		: cardList.go
+Description	: Model file to represent all the list-like objects and their related functions.
+*/
+
 package models
 
-// List with cards represented as strings
+// Represents CardOwnership list. Used to save the user collection.
+type CardOwnershipList struct {
+	CardOwnerships []CardOwnership `json:"collection"`
+}
+
+// Used to get the all the cards that match a uncompleated card search from ScryFall
 type StringCardList struct {
 	Cards []string `json:"data"`
 }
 
-type CardList struct {
-	Collection []Card `json:"collection"`
-}
-
+// Used to get the all the versions of a single card from ScryFall
 type CardVersionsList struct {
 	Cards []CardVersion `json:"data"`
 }
 
-type Version struct {
-	Set     string `json:"set"`
-	SetName string `json:"set_name"`
-	Number  string `json:"collector_number"`
+// Used to get all users collections.
+type UserCollection struct {
+	Username   string `json:"username"`
+	Collection []Card `json:"collection"`
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+Function	: Remove digital versions
+Description	: Removes all the digital version of a list of cardVersion to stay with the phisic versions.
+Parameters 	: cardVersion list
+Return     	: cardVersion list
+*/
 func RemoveDigitalVersions(cardVersionsList []CardVersion) []CardVersion {
 	var cardVersionsListPaper = []CardVersion{}
 	for index, card := range cardVersionsList {
@@ -31,15 +46,12 @@ func RemoveDigitalVersions(cardVersionsList []CardVersion) []CardVersion {
 	return cardVersionsListPaper
 }
 
-func GetVersionNames(cardVersionsList []CardVersion) []Version {
-	var versionList = []Version{}
-	for _, cardVersion := range cardVersionsList {
-		version := Version{Set: cardVersion.Set, SetName: cardVersion.SetName, Number: cardVersion.CollectorNumber}
-		versionList = append(versionList, version)
-	}
-	return versionList
-}
-
+/*
+Function	: Remove duplicate
+Description	: Removes all duplicates from a UserID list.
+Parameters 	: UserID list
+Return     	: UserID list
+*/
 func RemoveDuplicate(intSlice []uint) []uint {
 	allKeys := make(map[uint]bool)
 	list := []uint{}

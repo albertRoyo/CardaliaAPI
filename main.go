@@ -1,6 +1,12 @@
+/*
+File		: main.go
+Description	: Main file of the project. The main connects to the database and defines the router and all of its endpoints and CORS
+*/
+
 package main
 
 import (
+	"CardaliaAPI/middlewares"
 	"CardaliaAPI/models"
 	"CardaliaAPI/routes"
 	"log"
@@ -10,31 +16,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type") //"Access-Control-Allow-Headers, Origin, Accept, Authorization, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
-}
-
 func main() {
 
 	models.ConnectDataBase()
-	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 	router := gin.New()
 
 	//public := router.Group("/")
-
-	//router.Use(cors.Default())
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
@@ -47,34 +35,33 @@ func main() {
 	router.POST("/register", routes.Register)
 	router.POST("/login", routes.Login)
 
-	router.GET("/card/:cardname", routes.GetCardByName)
-	router.GET("/:autocomplete", routes.GetCardsByName)
-
+	router.GET("/cards/:autocomplete", routes.GetCardsByName)
 	router.GET("/cards/versions/:cardname", routes.GetCardVersions)
-	router.GET("/versions/:cardname", routes.GetVersionNames)
 
-	router.GET("/cards/:set/:number", routes.GetCardVersion)
+	router.GET("/user/collection/:username", routes.GetUserCollectionByName)
 
-	router.GET("/user/:username", routes.GetUserCollectionByName)
-	router.GET("/users/:card_id", routes.GetAllUserCollectionsByCardId)
+	protected := router.Group("/")
+	protected.Use(middlewares.JwtAuthMiddleware())
 
-	//protected := router.Group("/admin")
-	//protected.Use(cors.Default())
-	//protected.Use(middlewares.JwtAuthMiddleware())
-	router.POST("/cards", routes.SaveCollection)
-	router.GET("/cards", routes.GetCollection)
+	protected.PUT("/user/password", routes.ChangeUserPassword)
 
-	router.POST("/trade", routes.NewTrade)
-	router.PUT("/trade", routes.ModifyTrade)
-	router.DELETE("/trade/:username", routes.DeleteTrade)
+	protected.POST("/user/collection", routes.SaveCollection)
+	protected.GET("/user/collection", routes.GetCollection)
 
-	router.GET("/trades", routes.GetTrades)
+	protected.GET("/users/collections/:card_id", routes.GetAllUserCollectionsByCardId)
 
+	protected.POST("/user/trade", routes.NewTrade)
+	protected.PUT("/user/trade", routes.ModifyTrade)
+	protected.DELETE("/user/trade/:username", routes.DeleteTrade)
+
+	protected.GET("/user/trades", routes.GetTrades)
+
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-	router.Run(":" + port)
+	router.Run(host + ":" + port)
 
 }

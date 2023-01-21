@@ -1,3 +1,8 @@
+/*
+File		: entries.go
+Description	: File that deals with all the HTTP requests that doesn't require authentification.
+*/
+
 package routes
 
 import (
@@ -9,38 +14,93 @@ import (
 )
 
 /*
-Given an exact card name, this function calls GetCard to build a card struct with all its data
--IMPUT: 	gin context GET /card/:cardname
--RETURN:	Card(struct)
+Function	: Register (POST /register)
+Description	: Register a new user.
+Parameters 	: gin context -> request params {username, password}
+Return     	: message
 */
-func GetCardByName(c *gin.Context) {
-	exact_card_name := models.CleanCardName(c.Params.ByName("cardname"))
-	newCard, err := getCardByName(exact_card_name)
-
-	if err != nil {
-		c.IndentedJSON(http.StatusOK, newCard)
-	} else {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Card not found. Try again."})
+func Register(c *gin.Context) {
+	//Get the parameters from the http request
+	var input models.UserRegisterInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
+
+	u := models.User{}
+	u.Username = input.Username
+	u.Email = input.Email
+	u.Password = input.Password
+
+	// Encrypt password
+	err := u.BeforeSave()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Save the new user in the DB
+	_, err = u.SaveUser()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Registration successfull"})
 }
 
 /*
-Given an uncompleted card name, the function calls GetCardUncompleted and builds a list of card structs with the first 8 cards matches.
--IMPUT: 	gin context GET /:autocomplete
--RETURN:	Card(struct) list of 7 elements
+Function	: Login (POST /login)
+Description	: Login an existing user.
+Parameters 	: gin context -> request params {username, password}
+Return     	: token
+*/
+func Login(c *gin.Context) {
+	//Get the parameters from the http request
+	var input models.UserLoginInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	u := models.User{}
+	u.Username = input.Username
+	u.Password = input.Password
+
+	// Generate a token
+	email, token, err := LoginCheck(u.Username, u.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username or password is incorrect."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"email": email, "token": token})
+}
+
+/*
+Function	: Get cards by uncompleted cardname (GET /cards/:autocomplete)
+Description	: Given an uncompleted card name, the function calls GetCardUncompleted and builds a list of card
+structs with the first 8 cards matches.
+
+Parameters 	: gin context 	:autocomplete
+Return     	: Card list
 */
 func GetCardsByName(c *gin.Context) {
 	var cards = []string{}
-	cards = getCardUncompleted(c.Params.ByName("autocomplete"))
+
+	// Get the list of cards (strings) that match the search
+	cards = GetCardUncompletedScryfall(c.Params.ByName("autocomplete"))
 	var showncards = []models.Card{}
+
+	// For each card, get the card in Scryfall
 	for index, card := range cards {
 		var newCard models.Card
-		newCard, err := getCardByName(card)
+		newCard, err := GetCardByNameScryfall(card)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
 		showncards = append(showncards, newCard)
-		//Change this value to get more or less Cards
+		// Change this value to get more or less Cards
 		if index == 7 {
 			break
 		}
@@ -49,40 +109,27 @@ func GetCardsByName(c *gin.Context) {
 }
 
 /*
-Get all the paper versions of a card.
--IMPUT: 	gin context GET /cards/versions/:cardname
--RETURN:	All the paper versions of a card
+Function	: Get card by cardname (GET /cards/versions/:cardname)
+Description	: Get all the paper versions of a card.
+Parameters 	: gin context	:cardname
+Return     	: CardVersion list
 */
 func GetCardVersions(c *gin.Context) {
-	cardVersionsList := getCardVersions(c.Params.ByName("cardname"))
+	cardVersionsList, err := GetCardVersionsScryfall(c.Params.ByName("cardname"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 	c.IndentedJSON(http.StatusOK, cardVersionsList)
 }
 
 /*
-Get all the paper versions of a card.
--IMPUT: 	gin context GET /cards/versions/:cardname
--RETURN:	All the paper versions of a card
+Function	: Get a user collection by username (GET /user/collection/:username)
+Description	: Get the collection of a user.
+Parameters 	: gin context	:username
+Return     	: Collection
 */
-func GetVersionNames(c *gin.Context) {
-	cardVersionsList := getCardVersions(c.Params.ByName("cardname"))
-	versionsNameList := models.GetVersionNames(cardVersionsList)
-	c.IndentedJSON(http.StatusOK, versionsNameList)
-}
-
-/*
-Get a version of a card.
--IMPUT: 	gin context GET /card/:set/:number
--RETURN:	A version of a card
-*/
-func GetCardVersion(c *gin.Context) {
-	card := getCardVersion(c.Params.ByName("set"), c.Params.ByName("number"))
-
-	c.IndentedJSON(http.StatusOK, card)
-}
-
 func GetUserCollectionByName(c *gin.Context) {
 	collection, err := GetUserCollectionByNameDB(c.Params.ByName("username"))
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}

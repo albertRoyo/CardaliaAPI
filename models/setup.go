@@ -1,3 +1,8 @@
+/*
+File		: setup.go
+Description	: Model file to represent a data base object with a function that initializes the DB.
+*/
+
 package models
 
 import (
@@ -20,6 +25,7 @@ func ConnectDataBase() {
 		log.Fatalf("Error loading .env file")
 	}
 
+	// Get the enviroment variables
 	DbHost := os.Getenv("DB_HOST")
 	DbUser := os.Getenv("DB_USER")
 	DbPassword := os.Getenv("DB_PASSWORD")
@@ -28,6 +34,7 @@ func ConnectDataBase() {
 
 	DBURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", DbUser, DbPassword, DbHost, DbPort, DbName)
 
+	// Open DB
 	DB, err = gorm.Open(mysql.Open(DBURL), &gorm.Config{})
 
 	if err != nil {

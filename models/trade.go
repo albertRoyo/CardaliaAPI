@@ -1,5 +1,12 @@
+/*
+File		: trade.go
+Description	: Model file to represent all the trade-like objects and their related functions.
+It also has implicid functions for the Trade object.
+*/
+
 package models
 
+// Trade DB object.
 type Trade struct {
 	Trade_id       uint   `json:"trade_id"`
 	User_id_origin uint   `json:"user_id_origin"`
@@ -11,19 +18,31 @@ type Trade struct {
 	Status         int    `json:"status"`
 }
 
-type TradeJSON struct {
-	Username     string     `json:"username"`
-	WhatHeTrade  []CardJSON `json:"whatHeTrade"`
-	WhatYouTrade []CardJSON `json:"whatYouTrade"`
-	YouChecked   bool       `json:"youChecked"`
-	HeChecked    bool       `json:"heChecked"`
+// Object that represents all the trades a user has.
+type HoleTrade struct {
+	Username     string       `json:"username"`
+	Email        string       `json:"email"`
+	WhatHeTrade  []CardSelect `json:"whatHeTrade"`
+	WhatYouTrade []CardSelect `json:"whatYouTrade"`
+	YouChecked   bool         `json:"youChecked"`
+	HeChecked    bool         `json:"heChecked"`
 }
 
-type CardJSON struct {
+// Object that represents the number of selections of a traded card.
+type CardSelect struct {
 	Card   Card `json:"card"`
 	Select uint `json:"select"`
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+Function	: Create Trade
+Description	: Store a new trade to the DB.
+Self		: Trade
+Parameters 	:
+Return     	: Trade
+*/
 func (trade *Trade) CreateTrade() (*Trade, error) {
 	if err := DB.Create(&trade).Error; err != nil {
 		return &Trade{}, err
@@ -31,8 +50,14 @@ func (trade *Trade) CreateTrade() (*Trade, error) {
 	return trade, nil
 }
 
+/*
+Function	: Save Trade
+Description	: Modify a trade from the DB and if not found, create a new one.
+Self		: Trade
+Parameters 	:
+Return     	: Trade, error
+*/
 func (trade *Trade) SaveTrade() (*Trade, error) {
-
 	if DB.Model(&trade).Where("user_id_origin = ? AND user_id_owner = ? AND version_id = ? AND extras = ? AND condi = ? AND status != ?",
 		trade.User_id_origin, trade.User_id_owner, trade.VersionID, trade.Extras, trade.Condi, 0).Updates(&trade).RowsAffected == 0 {
 		if err := DB.Create(&trade).Error; err != nil {
@@ -40,16 +65,4 @@ func (trade *Trade) SaveTrade() (*Trade, error) {
 		}
 	}
 	return trade, nil
-}
-
-func GetCheks(trade Trade, userAsking uint) (bool, bool) {
-	if trade.Status == -1 {
-		return false, false
-	} else {
-		if trade.User_id_origin == userAsking && trade.Status == int(trade.User_id_origin) {
-			return true, false
-		} else {
-			return false, true
-		}
-	}
 }
