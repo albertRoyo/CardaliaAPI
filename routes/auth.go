@@ -6,6 +6,7 @@ Description	: File that deals with all the HTTP requests that require authentifi
 package routes
 
 import (
+	"CardaliaAPI/connections"
 	"CardaliaAPI/models"
 	"CardaliaAPI/utils/token"
 	"net/http"
@@ -64,12 +65,6 @@ func SaveCollection(c *gin.Context) {
 		return
 	}
 
-	// Delete the previous collection of the user from the DB
-	if err := DeletePreviousCollection(user_id); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	ownershipList := models.CardOwnershipList{}
 
 	// Bind the recived collection from gin.context
@@ -79,7 +74,7 @@ func SaveCollection(c *gin.Context) {
 	}
 
 	// Save the recived collection to the DB
-	if err := SaveUserCollection(ownershipList, user_id); err != nil {
+	if err := connections.SaveUserCollectionDB(ownershipList, user_id); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -102,7 +97,7 @@ func GetCollection(c *gin.Context) {
 	}
 
 	// Get the user's collection from the DB
-	collection, err := GetCollectionByUserID(user_id)
+	collection, err := connections.GetCollectionByUserIdDB(user_id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -123,7 +118,7 @@ func GetAllUserCollectionsByCardId(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	userCollections, err := GetAllUserCollectionsByCardIdDB(userIDAvoid, c.Params.ByName("card_id"))
+	userCollections, err := connections.GetAllUserCollectionsByCardIdDB(userIDAvoid, c.Params.ByName("card_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -158,7 +153,7 @@ func NewTrade(c *gin.Context) {
 	}
 
 	// Create a new trade
-	if err = NewTradeDB(user_id_origin, holeTrade); err != nil {
+	if err = connections.NewTradeDB(user_id_origin, holeTrade); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -191,7 +186,7 @@ func ModifyTrade(c *gin.Context) {
 	}
 
 	// Modify the trade
-	if err = ModifyTradeDB(user_id_origin, holeTrade); err != nil {
+	if err = connections.ModifyTradeDB(user_id_origin, holeTrade); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -217,7 +212,7 @@ func DeleteTrade(c *gin.Context) {
 	user_id2, err := models.GetUserIDByUsername(c.Params.ByName("username"))
 
 	// Delete all trades that are not finished between users
-	err = DeleteAllTradesBetweenUsersDB(user_id1, user_id2)
+	err = connections.DeleteAllTradesBetweenUsersDB(user_id1, user_id2)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -241,7 +236,7 @@ func GetTrades(c *gin.Context) {
 	}
 
 	// Get all trades that user participates in, including the finished ones.
-	trades, err := GetTradesDB(user_id_origin)
+	trades, err := connections.GetTradesDB(user_id_origin)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
