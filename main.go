@@ -20,7 +20,7 @@ import (
 func main() {
 
 	models.ConnectDataBase()
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
 	router.Use(cors.New(cors.Config{
