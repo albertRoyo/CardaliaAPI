@@ -60,7 +60,7 @@ func main() {
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	if host == "" || port == "" {
+	if port == "" {
 		log.Fatal("$PORT and $HOST must be set")
 	}
 	router.Run(host + ":" + port)
